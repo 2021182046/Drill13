@@ -113,6 +113,12 @@ class Zombie:
         else:
             return BehaviorTree.FAIL
 
+    def is_ball_count_zombie_win(self):
+        if self.ball_count > play_mode.boy.ball_count:
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.FAIL
+    
     def move_to_boy(self, r=0.5):
         self.move_slightly_to(play_mode.boy.x, play_mode.boy.y)
         if self.distance_less_than(play_mode.boy.x, play_mode.boy.y, self.x, self.y, r):
@@ -140,9 +146,9 @@ class Zombie:
 
         SEQ_chase_boy = Sequence('소년을 추적', c1, a4)
 
-        root = SEL_chase_or_wander = Selector('추적 또는 배회', SEQ_chase_boy, SEQ_wander)
+        SEL_chase_or_wander = Selector('추적 또는 배회', SEQ_chase_boy, SEQ_wander)
 
-        a5 = Action('순찰 위치 가져오기', self.get_patrol_location)
-        SEQ = Sequence('순찰', a5, a2)
+        c2 = Condition('공 개수가 소년보다 더 많음', self.is_ball_count_zombie_win)
+        root = Selector('추적 또는 배회', Sequence('공 개수가 더 많으면 추적', c2, SEQ_chase_boy), SEQ_wander)
 
         self.bt = BehaviorTree(root)
